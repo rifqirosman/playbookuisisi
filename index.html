@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Playbook Akuisisi Perusahaan — End to End</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF0F3; --paper:#FFFFFF; --ink:#16223B; --muted:#5B6678; --line:#D5DBE3;
+  --teal:#0E6E68; --teal-soft:#DCEFEC; --amber:#A8560A; --amber-soft:#F8E9D6;
+  --plum:#6B3A7A; --plum-soft:#EFE3F2; --blue:#2A5DA8; --blue-soft:#DFE8F6;
+  --red:#B03A2E; --red-soft:#F6DFDC;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#101723; --paper:#182233; --ink:#E6EBF2; --muted:#9AA6B8; --line:#2A3649;
+    --teal:#4FC2B6; --teal-soft:#16343A; --amber:#E9A35A; --amber-soft:#3A2A19;
+    --plum:#C99AD6; --plum-soft:#34243C; --blue:#86AEEB; --blue-soft:#1C2C46;
+    --red:#EE8A7E; --red-soft:#3D2220;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101723; --paper:#182233; --ink:#E6EBF2; --muted:#9AA6B8; --line:#2A3649;
+  --teal:#4FC2B6; --teal-soft:#16343A; --amber:#E9A35A; --amber-soft:#3A2A19;
+  --plum:#C99AD6; --plum-soft:#34243C; --blue:#86AEEB; --blue-soft:#1C2C46;
+  --red:#EE8A7E; --red-soft:#3D2220;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.55}
+h1,h2,h3{font-family:"Bricolage Grotesque","Figtree",system-ui,sans-serif;line-height:1.15;margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding:0 18px}
+header{padding:34px 0 18px}
+header h1{font-size:clamp(28px,5vw,46px);font-weight:700;letter-spacing:-.01em;max-width:18ch}
+header p.lead{color:var(--muted);max-width:62ch;margin:12px 0 0}
+.facts{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:20px}
+.fact b{display:block;font-family:"Bricolage Grotesque",sans-serif;font-size:22px}
+.fact span{color:var(--muted);font-size:13px}
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+nav.tabs .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav.tabs button{flex:0 0 auto;border:0;background:none;color:var(--muted);font:600 14px "Figtree",sans-serif;padding:14px 12px;border-bottom:3px solid transparent;cursor:pointer}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--teal)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+main{padding:24px 0 60px}
+section[hidden]{display:none}
+.intro{color:var(--muted);max-width:70ch;margin:0 0 18px}
+
+/* Deal track */
+.track{display:flex;align-items:stretch;overflow-x:auto;padding:6px 2px 14px;gap:0}
+.step{flex:0 0 auto;display:flex;align-items:center}
+.step button{border:1.5px solid var(--line);background:var(--paper);color:var(--ink);border-radius:10px;padding:10px 12px;width:128px;text-align:left;cursor:pointer;font:inherit}
+.step button .n{font:700 12px "Figtree";color:var(--teal)}
+.step button .t{display:block;font-weight:600;font-size:13px;line-height:1.3;margin-top:2px}
+.step button .d{display:block;font-size:12px;color:var(--muted);margin-top:4px}
+.step button[aria-pressed="true"]{border-color:var(--teal);background:var(--teal-soft)}
+.link{width:18px;height:2px;background:var(--line);flex:0 0 auto}
+.gate{width:14px;height:14px;transform:rotate(45deg);background:var(--amber);flex:0 0 auto;margin:0 4px}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-bottom:6px}
+.legend i{display:inline-block;width:10px;height:10px;transform:rotate(45deg);background:var(--amber);margin-right:6px;vertical-align:middle}
+
+.detail{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:22px;margin-top:8px}
+.detail h2{font-size:26px}
+.detail .meta{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 16px}
+.pill{font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--teal-soft);color:var(--teal)}
+.pill.amber{background:var(--amber-soft);color:var(--amber)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px 28px}
+.cols h3{font-size:15px;margin-bottom:6px}
+.cols ul{margin:0;padding-left:18px}
+.cols li{margin:4px 0}
+.gatebox{margin-top:18px;border-left:4px solid var(--amber);background:var(--amber-soft);padding:12px 14px;border-radius:0 8px 8px 0}
+.tip{margin-top:12px;border-left:4px solid var(--blue);background:var(--blue-soft);padding:12px 14px;border-radius:0 8px 8px 0}
+.who{display:flex;flex-wrap:wrap;gap:6px}
+.who button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;padding:4px 8px;font:500 12.5px "Figtree";cursor:pointer}
+.navrow{display:flex;justify-content:space-between;margin-top:20px;gap:10px}
+.btn{border:1px solid var(--line);background:var(--paper);color:var(--ink);padding:9px 14px;border-radius:8px;font:600 14px "Figtree";cursor:pointer}
+.btn:disabled{opacity:.4;cursor:default}
+
+/* Stakeholders */
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.chip{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:6px 12px;font:600 13px "Figtree";cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.sh-list{display:grid;gap:10px}
+.sh{background:var(--paper);border:1px solid var(--line);border-radius:12px;border-left:5px solid var(--c,var(--teal))}
+.sh summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.sh summary::-webkit-details-marker{display:none}
+.sh summary b{font-size:15.5px}
+.sh summary small{color:var(--muted);display:block;font-size:13px;margin-top:2px}
+.sh summary .cat{font-size:12px;font-weight:600;color:var(--c);white-space:nowrap}
+.sh .body{padding:0 16px 16px}
+.sh .body h4{margin:12px 0 4px;font-size:13.5px}
+.sh .body ul{margin:0;padding-left:18px}
+.sh .body p{margin:0}
+.c-int{--c:var(--teal)} .c-par{--c:var(--plum)} .c-sel{--c:var(--red)} .c-kon{--c:var(--blue)} .c-reg{--c:var(--amber)}
+
+/* RACI */
+.scroll{overflow-x:auto;background:var(--paper);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
+th{font-weight:600;background:var(--bg);position:sticky;top:0}
+td:first-child,th:first-child{text-align:left;white-space:normal;min-width:190px;position:sticky;left:0;background:var(--paper)}
+th:first-child{background:var(--bg)}
+.r{display:inline-block;min-width:24px;padding:2px 6px;border-radius:5px;font-weight:700}
+.R{background:var(--teal-soft);color:var(--teal)} .A{background:var(--red-soft);color:var(--red)}
+.C{background:var(--blue-soft);color:var(--blue)} .I{background:var(--bg);color:var(--muted)}
+.raci-key{display:flex;flex-wrap:wrap;gap:14px;margin:0 0 12px;font-size:13px;color:var(--muted)}
+
+/* Gantt */
+.gantt{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;overflow-x:auto}
+.g-inner{min-width:720px}
+.g-row{display:grid;grid-template-columns:190px 1fr;align-items:center;min-height:36px;border-bottom:1px dashed var(--line)}
+.g-row:last-child{border-bottom:0}
+.g-label{font-size:13px;font-weight:600;padding-right:10px}
+.g-lane{position:relative;height:22px}
+.g-bar{position:absolute;top:3px;height:16px;border-radius:4px;background:var(--teal);cursor:pointer;border:0;padding:0}
+.g-bar.max{background:var(--teal-soft);border:1px dashed var(--teal)}
+.g-bar.post{background:var(--plum)}
+.g-bar.post.max{background:var(--plum-soft);border-color:var(--plum)}
+.g-axis{display:grid;grid-template-columns:190px 1fr;font-size:11.5px;color:var(--muted);margin-bottom:6px}
+.g-ticks{position:relative;height:16px}
+.g-ticks span{position:absolute;transform:translateX(-50%)}
+.g-mile{position:absolute;top:0;bottom:0;width:0;border-left:2px solid var(--amber)}
+.scenario{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+
+/* Budget */
+.calc{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+.calc label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.calc input[type=number],.calc select{width:100%;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:500 15px "Figtree"}
+.calc input[type=range]{width:100%}
+.toggle{display:flex;align-items:center;gap:8px;font-size:14px;margin-top:4px}
+.total{display:flex;flex-wrap:wrap;gap:16px 36px;margin:4px 0 14px}
+.total b{display:block;font-family:"Bricolage Grotesque",sans-serif;font-size:26px}
+.total span{font-size:13px;color:var(--muted)}
+td.num,th.num{text-align:right}
+.note{font-size:13px;color:var(--muted);margin-top:12px;max-width:80ch}
+footer{color:var(--muted);font-size:12.5px;padding:24px 0 40px;border-top:1px solid var(--line)}
+@media (prefers-reduced-motion:no-preference){.detail{animation:in .25s ease}@keyframes in{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}}
+@media (max-width:640px){.g-row,.g-axis{grid-template-columns:130px 1fr}.g-inner{min-width:620px}.detail{padding:16px}}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <h1>Playbook akuisisi perusahaan, dari screening sampai integrasi</h1>
+  <p class="lead">Alur end-to-end untuk akuisisi saham oleh anak usaha grup BUMN: siapa terlibat, apa tugasnya, berapa lama, dan kira-kira berapa biayanya. Klik tiap fase, stakeholder, atau bar timeline untuk lihat detail.</p>
+  <div class="facts">
+    <div class="fact"><b>10 fase</b><span>dari strategi sampai PMI</span></div>
+    <div class="fact"><b>6–11 bulan</b><span>sampai closing (tipikal)</span></div>
+    <div class="fact"><b>5 gate</b><span>titik persetujuan wajib</span></div>
+    <div class="fact"><b>±2–5%</b><span>biaya transaksi dari nilai deal</span></div>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Bagian">
+  <div class="wrap" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="alur">Alur proses</button>
+    <button role="tab" aria-selected="false" data-tab="stake">Stakeholder</button>
+    <button role="tab" aria-selected="false" data-tab="raci">Matriks RACI</button>
+    <button role="tab" aria-selected="false" data-tab="time">Timeline</button>
+    <button role="tab" aria-selected="false" data-tab="budget">Estimasi budget</button>
+  </div>
+</nav>
+
+<main class="wrap">
+  <section id="alur">
+    <p class="intro">Pilih fase di jalur di bawah. Belah ketupat oranye menandai gate persetujuan: fase berikutnya sebaiknya tidak jalan sebelum gate itu lolos.</p>
+    <div class="legend"><span><i></i>Gate persetujuan</span><span>Geser ke samping untuk lihat semua fase</span></div>
+    <div class="track" id="track"></div>
+    <div class="detail" id="detail" aria-live="polite"></div>
+  </section>
+
+  <section id="stake" hidden>
+    <p class="intro">Klik kartu untuk membuka peran, tugas, dan tanggung jawab. Filter berdasarkan kelompok.</p>
+    <div class="filters" id="filters"></div>
+    <div class="sh-list" id="shlist"></div>
+  </section>
+
+  <section id="raci" hidden>
+    <p class="intro">Siapa yang mengerjakan, siapa yang menyetujui, siapa yang diajak konsultasi, dan siapa yang cukup diberi informasi untuk aktivitas kunci.</p>
+    <div class="raci-key">
+      <span><span class="r R">R</span> Responsible, mengerjakan</span>
+      <span><span class="r A">A</span> Accountable, menyetujui</span>
+      <span><span class="r C">C</span> Consulted, dimintai masukan</span>
+      <span><span class="r I">I</span> Informed, diberi informasi</span>
+    </div>
+    <div class="scroll"><table id="racitable"></table></div>
+  </section>
+
+  <section id="time" hidden>
+    <p class="intro">Bar gelap = durasi tercepat, bar putus-putus = durasi terlama. Beberapa fase berjalan paralel. Klik bar untuk loncat ke detail fase.</p>
+    <div class="scenario" id="scenario"></div>
+    <div class="gantt"><div class="g-inner" id="gantt"></div></div>
+    <p class="note" id="timenote"></p>
+  </section>
+
+  <section id="budget" hidden>
+    <p class="intro">Masukkan nilai transaksi dan kompleksitas deal. Angka adalah kisaran indikatif pasar Indonesia untuk perencanaan RKAP, bukan penawaran harga.</p>
+    <div class="calc">
+      <div><label for="deal">Nilai transaksi (Rp miliar)</label><input type="number" id="deal" min="10" max="20000" step="10" value="500"></div>
+      <div><label for="cx">Kompleksitas</label>
+        <select id="cx"><option value="0.75">Sederhana (1 entitas, bisnis jelas)</option><option value="1" selected>Menengah (beberapa anak usaha)</option><option value="1.5">Kompleks (multi-entitas, regulated, lintas negara)</option></select></div>
+      <div><label for="fee">Success fee financial advisor: <span id="feev">1,5</span>%</label><input type="range" id="fee" min="0.5" max="3" step="0.25" value="1.5"></div>
+      <div><label>Opsi tambahan</label>
+        <label class="toggle"><input type="checkbox" id="tbk"> Target perusahaan terbuka (Tbk)</label>
+        <label class="toggle"><input type="checkbox" id="pmi" checked> Sertakan konsultan PMI</label></div>
+    </div>
+    <div class="total" id="totals"></div>
+    <div class="scroll"><table id="budtable"></table></div>
+    <p class="note">Asumsi: fee konsultan diskalakan dengan akar dari ukuran deal (deal Rp500 M = baseline) dan dikali faktor kompleksitas. Contingency 10% untuk scope creep, DD tambahan, dan perpanjangan timeline. Belum termasuk pajak transaksi (PPN atas jasa, PPh atas penjualan saham di sisi penjual), biaya pendanaan akuisisi, dan biaya internal SDM. Untuk anggaran final, minta proposal minimal 3 penyedia per jasa sesuai ketentuan pengadaan perusahaan.</p>
+  </section>
+</main>
+
+<footer class="wrap">Referensi regulasi yang umum relevan: UU 40/2007 PT; PP 57/2010 dan Peraturan KPPU 3/2023 (notifikasi merger/akuisisi); POJK 9/2018 (pengambilalihan Tbk) dan POJK 17/2020 (transaksi material); Peraturan Menteri BUMN terkait tata kelola dan aksi korporasi anak usaha; AD/ART perusahaan dan kebijakan kewenangan internal grup. Selalu konfirmasi versi terbaru dengan Legal dan Corporate Secretary.</footer>
+
+<script>
+const S = {
+  bod:{n:"Direksi (BOD) pengakuisisi",cat:"int",s:"Pengambil keputusan eksekutif",
+    peran:"Pemilik keputusan akuisisi di level perusahaan dan sponsor utama deal.",
+    tugas:["Menetapkan rasional strategis dan kriteria target","Menyetujui NBO, penunjukan konsultan, dan mandat negosiasi","Mengajukan izin prinsip ke Dekom dan induk","Menandatangani CSPA dan dokumen closing"],
+    tj:"Akuntabel atas kelayakan bisnis, kepatuhan tata kelola, dan pencapaian value creation pasca akuisisi."},
+  dekom:{n:"Dewan Komisaris & Komite",cat:"int",s:"Pengawasan & persetujuan",
+    peran:"Mengawasi dan memberi persetujuan/rekomendasi sesuai AD dan batas kewenangan.",
+    tugas:["Mereview kajian kelayakan dan risk assessment","Memberi persetujuan tertulis atau rekomendasi ke RUPS","Komite Risiko/Investasi mereview hasil DD dan valuasi"],
+    tj:"Memastikan keputusan melalui proses yang wajar (business judgment rule) dan sesuai GCG."},
+  deal:{n:"Deal Team / Project Leader (PMO)",cat:"int",s:"Motor penggerak deal",
+    peran:"Tim lintas fungsi yang mengelola deal sehari-hari, biasanya dari Strategy/Business Development.",
+    tugas:["Menyusun project charter, timeline, dan RACI","Mengelola konsultan, data room, dan Q&A","Menyusun kajian kelayakan, investment memo, dan bahan BOD/Dekom","Memimpin negosiasi komersial bersama FA","Memantau pemenuhan CP dan closing checklist"],
+    tj:"Bertanggung jawab atas kualitas analisis, ketepatan waktu, dan kerahasiaan proyek."},
+  fin:{n:"Finance & Treasury",cat:"int",s:"Pendanaan & modelling",
+    peran:"Mengamankan sumber dana dan menguji dampak finansial.",
+    tugas:["Menyusun model finansial, sinergi, dan dampak ke laporan konsolidasi","Menyiapkan skema pendanaan (kas internal, pinjaman, PMN induk)","Menyiapkan anggaran RKAP/RKAP-P untuk biaya transaksi","Mengeksekusi pembayaran saat closing (escrow bila ada)"],
+    tj:"Memastikan deal terdanai tanpa melanggar covenant dan rasio keuangan."},
+  legal:{n:"Legal & Corporate Secretary",cat:"int",s:"Kepatuhan & dokumen korporasi",
+    peran:"Penjaga kepatuhan hukum dan administrasi korporasi.",
+    tugas:["Mengawal NDA, LOI, dan review SPA bersama law firm","Menyiapkan sirkuler/risalah BOD, Dekom, dan RUPS","Mengelola keterbukaan informasi bila ada entitas Tbk","Koordinasi notaris, AHU, dan notifikasi KPPU"],
+    tj:"Memastikan seluruh persetujuan korporasi sah dan tidak ada celah hukum."},
+  tax:{n:"Tax internal",cat:"int",s:"Struktur pajak",
+    peran:"Memastikan struktur deal efisien dan risiko pajak target terkelola.",
+    tugas:["Mereview temuan tax DD dan exposure pajak","Memberi masukan struktur (share deal vs asset deal)","Memastikan indemnity pajak masuk SPA"],
+    tj:"Meminimalkan kebocoran nilai akibat risiko pajak historis."},
+  risk:{n:"Manajemen Risiko & Compliance",cat:"int",s:"Risk assessment",
+    peran:"Fungsi lini kedua yang menilai risiko deal secara independen.",
+    tugas:["Menyusun risk register dan mitigasi deal","Kajian integrity/KYC atas penjual dan target (anti-korupsi, AML)","Memberi opini risiko ke BOD dan Komite"],
+    tj:"Memastikan risiko material terungkap sebelum keputusan diambil."},
+  spi:{n:"SPI / Internal Audit",cat:"int",s:"Assurance proses",
+    peran:"Memberi assurance bahwa proses akuisisi sesuai ketentuan.",
+    tugas:["Review kepatuhan proses pengadaan konsultan","Review kelengkapan dokumen persetujuan","Audit pasca integrasi atas pencapaian target"],
+    tj:"Menjaga akuntabilitas dan kesiapan saat diperiksa auditor eksternal/BPK."},
+  hrit:{n:"HC, IT & fungsi operasional",cat:"int",s:"Subject-matter expert",
+    peran:"Menguji kesiapan operasional dan integrasi di bidangnya masing-masing.",
+    tugas:["HC: review struktur organisasi, remunerasi, kontrak kunci, retensi talenta","IT: review sistem, lisensi, keamanan siber, data","Operasional: validasi asumsi sinergi dan rencana 100 hari"],
+    tj:"Memastikan sinergi realistis dan tidak ada kejutan operasional pasca closing."},
+  induk:{n:"Perusahaan induk (Telkom) & pemegang saham",cat:"par",s:"Persetujuan grup",
+    peran:"Pemegang saham yang memberi persetujuan sesuai kebijakan portofolio grup.",
+    tugas:["Mereview keselarasan dengan strategi portofolio grup","Memberi persetujuan melalui RUPS/keputusan sirkuler","Menyetujui pendanaan bila melibatkan dana induk","Meneruskan pelaporan ke pemegang saham di atasnya bila dipersyaratkan"],
+    tj:"Menjaga konsistensi portofolio grup dan kepatuhan pada regulasi BUMN."},
+  seller:{n:"Pemegang saham penjual",cat:"sel",s:"Counterparty",
+    peran:"Pemilik saham target yang menjual.",
+    tugas:["Menyediakan data dan akses DD","Bernegosiasi harga, R&W, dan indemnity","Memenuhi CP di sisi penjual (waiver, persetujuan pihak ketiga)","Menyerahkan saham dan dokumen saat closing"],
+    tj:"Menjamin kebenaran representations & warranties yang diberikan."},
+  target:{n:"Manajemen target",cat:"sel",s:"Pemilik informasi",
+    peran:"Penyedia informasi bisnis dan mitra kunci integrasi.",
+    tugas:["Mengisi data room dan menjawab Q&A","Management presentation dan site visit","Menjalankan bisnis secara normal (ordinary course) sampai closing","Terlibat dalam perencanaan PMI"],
+    tj:"Menjaga kontinuitas bisnis dan kerahasiaan selama proses."},
+  fa:{n:"Financial Advisor (buy-side)",cat:"kon",s:"Arsitek deal",
+    peran:"Penasihat keuangan yang mengarahkan strategi transaksi dan negosiasi.",
+    tugas:["Screening dan profiling target","Menyusun valuasi awal dan struktur deal","Menyiapkan NBO/BO dan mendampingi negosiasi","Koordinasi seluruh workstream konsultan"],
+    tj:"Memberi saran harga dan struktur yang terbaik bagi pembeli. Fee: retainer bulanan + success fee."},
+  lawfirm:{n:"Konsultan hukum (law firm)",cat:"kon",s:"Legal DD & dokumentasi",
+    peran:"Penasihat hukum transaksi. Untuk target Tbk, wajib terdaftar di OJK.",
+    tugas:["Legal due diligence (perizinan, aset, kontrak, litigasi, ketenagakerjaan)","Drafting dan negosiasi CSPA, SHA, dan dokumen closing","Legal opinion dan analisis notifikasi KPPU"],
+    tj:"Memastikan risiko hukum teridentifikasi dan terlindungi di perjanjian."},
+  kap:{n:"KAP: Financial DD",cat:"kon",s:"Quality of earnings",
+    peran:"Kantor akuntan publik yang menguji kualitas angka keuangan target.",
+    tugas:["Quality of earnings dan normalisasi EBITDA","Analisis net debt, debt-like items, dan working capital","Review kebijakan akuntansi dan kualitas aset"],
+    tj:"Menghasilkan dasar angka yang andal untuk harga dan mekanisme penyesuaian harga."},
+  taxc:{n:"Konsultan pajak",cat:"kon",s:"Tax DD & structuring",
+    peran:"Menguji exposure pajak dan merancang struktur yang efisien.",
+    tugas:["Tax DD 3–5 tahun terakhir","Kuantifikasi potensi kewajiban pajak","Rekomendasi struktur dan klausul tax indemnity"],
+    tj:"Mengukur risiko pajak yang harus ditanggung penjual atau dipotong dari harga."},
+  kjpp:{n:"KJPP (penilai publik)",cat:"kon",s:"Valuasi independen",
+    peran:"Penilai terdaftar yang memberi opini nilai dan kewajaran transaksi.",
+    tugas:["Penilaian saham/bisnis target (DCF, market multiple)","Fairness opinion atas harga transaksi","Penilaian aset tetap bila material"],
+    tj:"Opini independen sebagai dasar persetujuan organ perusahaan dan perlindungan direksi."},
+  cdd:{n:"Konsultan commercial & technical DD",cat:"kon",s:"Validasi bisnis",
+    peran:"Menguji asumsi pasar, posisi kompetitif, dan kondisi teknis/IT.",
+    tugas:["Market sizing, analisis pelanggan dan kompetitor","Validasi business plan dan sinergi","Technical/IT DD: arsitektur, cybersecurity, technical debt"],
+    tj:"Memastikan proyeksi pendapatan dan sinergi bukan sekadar optimisme penjual."},
+  hresg:{n:"Konsultan HR/aktuaria & ESG",cat:"kon",s:"People & sustainability",
+    peran:"Menguji liabilitas karyawan dan risiko lingkungan-sosial.",
+    tugas:["Perhitungan imbalan kerja (aktuaria)","Review perjanjian kerja bersama dan key person","ESG DD: AMDAL/perizinan lingkungan, K3, isu sosial"],
+    tj:"Mengungkap kewajiban tersembunyi yang tidak tercatat penuh di neraca."},
+  notaris:{n:"Notaris",cat:"kon",s:"Akta & AHU",
+    peran:"Pejabat pembuat akta pengambilalihan dan perubahan data perseroan.",
+    tugas:["Membuat akta RUPS dan akta pengambilalihan","Memproses pemberitahuan ke Kementerian Hukum (AHU)","Memastikan dokumen sesuai UU PT"],
+    tj:"Keabsahan formal peralihan saham."},
+  pmic:{n:"Konsultan PMI (opsional)",cat:"kon",s:"Integrasi",
+    peran:"Mendampingi integrasi pasca akuisisi.",
+    tugas:["Menyusun rencana 100 hari dan tracking sinergi","Desain operating model dan tata kelola anak usaha baru","Change management dan komunikasi"],
+    tj:"Memastikan nilai yang dibayar benar-benar terealisasi."},
+  kppu:{n:"KPPU",cat:"reg",s:"Persaingan usaha",
+    peran:"Regulator persaingan usaha.",
+    tugas:["Menerima notifikasi paling lambat 30 hari kerja setelah akuisisi efektif bila melewati ambang aset/penjualan gabungan","Menilai dampak terhadap persaingan","Menerima konsultasi pra-transaksi (sukarela)"],
+    tj:"Keterlambatan notifikasi dapat dikenai denda. Ambang umum: aset gabungan > Rp2,5 T atau penjualan gabungan > Rp5 T."},
+  ahu:{n:"Kementerian Hukum (AHU)",cat:"reg",s:"Administrasi PT",
+    peran:"Mencatat perubahan pemegang saham dan anggaran dasar.",
+    tugas:["Menerima pemberitahuan perubahan data perseroan","Menerbitkan persetujuan perubahan AD bila ada"],
+    tj:"Pencatatan resmi kepemilikan baru."},
+  ojk:{n:"OJK & BEI (bila target Tbk)",cat:"reg",s:"Pasar modal",
+    peran:"Regulator pasar modal untuk pengambilalihan perusahaan terbuka.",
+    tugas:["Menerima keterbukaan informasi negosiasi dan pengambilalihan","Mengawasi penawaran tender wajib (POJK 9/2018)","Mengawasi pemenuhan free float"],
+    tj:"Melindungi pemegang saham minoritas."},
+  sektor:{n:"Regulator sektoral",cat:"reg",s:"Izin usaha",
+    peran:"Kementerian/lembaga pemberi izin di sektor target (mis. Komdigi, OJK sektor keuangan, Kementerian Investasi untuk PMA).",
+    tugas:["Persetujuan perubahan pengendali bila dipersyaratkan izin","Penyesuaian perizinan berusaha (OSS)"],
+    tj:"Kelangsungan izin usaha target setelah perubahan pengendali."}
+};
+const CATS={int:"Internal pengakuisisi",par:"Induk & pemegang saham",sel:"Sisi penjual",kon:"Konsultan",reg:"Regulator"};
+
+const P = [
+ {n:"Strategi & screening target",min:4,max:8,st:0,
+  goal:"Menentukan kenapa akuisisi, target seperti apa, dan shortlist kandidat.",
+  act:["Tetapkan rasional strategis (growth, capability, market access) dan kaitkan ke RJPP/RKAP","Susun kriteria investasi: ukuran, sektor, profitabilitas, IRR minimum","Long list ke short list target, profiling awal","Bentuk deal team dan project charter","Pengadaan financial advisor"],
+  del:["Investment thesis","Short list 3–5 target","Project charter & RACI"],
+  who:["bod","deal","fin","fa"],gate:null,
+  tip:"Tulis kriteria 'walk away' sejak awal (harga maksimum, deal breaker). Ini jadi jangkar saat negosiasi memanas."},
+ {n:"Pendekatan, NDA & penawaran tidak mengikat",min:3,max:6,st:6,
+  goal:"Membuka komunikasi dengan penjual dan mendapat akses informasi awal.",
+  act:["Pendekatan ke pemegang saham target (langsung atau via FA)","Tanda tangan NDA","Review teaser/information memorandum","Valuasi indikatif","Kirim Non-Binding Offer / LOI dengan eksklusivitas bila memungkinkan"],
+  del:["NDA","Valuasi indikatif","NBO/LOI"],
+  who:["deal","fa","legal","seller","bod"],gate:"Persetujuan BOD atas pengiriman NBO dan kisaran harga indikatif.",
+  tip:"Minta periode eksklusivitas 60–90 hari di LOI supaya biaya DD tidak terbuang karena penjual melempar ke pembeli lain."},
+ {n:"Izin prinsip internal",min:3,max:6,st:9,
+  goal:"Mendapat restu organ perusahaan dan induk sebelum mengeluarkan biaya DD yang besar.",
+  act:["Susun kajian kelayakan awal dan risk assessment","Presentasi ke Dekom/Komite","Pengajuan izin prinsip ke induk sesuai kebijakan kewenangan grup","Alokasi anggaran biaya transaksi di RKAP/RKAP-P"],
+  del:["Kajian kelayakan awal","Persetujuan prinsip Dekom & induk","Anggaran transaksi"],
+  who:["bod","dekom","induk","deal","risk","fin"],gate:"Izin prinsip dari Dekom dan induk untuk melanjutkan ke due diligence.",
+  tip:"Di lingkungan grup BUMN, fase ini sering jadi bottleneck. Mulai paralel dengan fase 2 dan jadwalkan slot rapat Dekom sejak awal."},
+ {n:"Due diligence",min:6,max:10,st:13,
+  goal:"Menguji semua klaim penjual dan menemukan risiko tersembunyi.",
+  act:["Buka virtual data room dan Q&A log","Financial DD (quality of earnings, net debt, working capital)","Legal DD (perizinan, aset, kontrak, litigasi)","Tax DD","Commercial & technical/IT DD","HR/aktuaria dan ESG DD","Management presentation dan site visit","Red flag report lalu full report"],
+  del:["Red flag report","Laporan DD per workstream","Daftar isu untuk harga dan SPA"],
+  who:["deal","kap","lawfirm","taxc","cdd","hresg","target","hrit","tax"],gate:null,
+  tip:"Minta red flag report di minggu ke-3 atau ke-4. Kalau ada deal breaker, lebih murah berhenti di sini daripada setelah full report."},
+ {n:"Valuasi & fairness opinion",min:4,max:6,st:18,
+  goal:"Menentukan harga wajar berdasarkan hasil DD dan mendapat opini independen.",
+  act:["Update model finansial dengan temuan DD","Kuantifikasi sinergi dan biaya integrasi","Penilaian oleh KJPP","Fairness opinion atas harga yang dinegosiasikan"],
+  del:["Model valuasi final","Laporan penilaian KJPP","Fairness opinion"],
+  who:["fa","kjpp","fin","deal"],gate:null,
+  tip:"Pisahkan standalone value dan nilai sinergi. Bayar premi hanya untuk sinergi yang bisa dieksekusi sendiri oleh pembeli."},
+ {n:"Negosiasi & perjanjian jual beli",min:4,max:8,st:21,
+  goal:"Mengunci harga, struktur, dan perlindungan hukum dalam CSPA.",
+  act:["Binding offer","Negosiasi harga, mekanisme penyesuaian (locked box vs completion accounts)","Negosiasi R&W, indemnity, cap dan basket, escrow/holdback","Tetapkan conditions precedent (CP) dan long stop date","Drafting SHA bila akuisisi tidak 100%"],
+  del:["Binding offer","CSPA final (siap tanda tangan)","SHA bila relevan"],
+  who:["deal","fa","lawfirm","legal","tax","seller","bod"],gate:null,
+  tip:"Temuan DD yang tidak bisa diperbaiki sebelum closing diterjemahkan jadi tiga opsi: potong harga, specific indemnity, atau CP."},
+ {n:"Persetujuan korporasi & regulator",min:4,max:8,st:26,
+  goal:"Mendapat persetujuan final organ perusahaan dan pemegang saham.",
+  act:["Kajian kelayakan final ke BOD","Persetujuan Dekom","Persetujuan RUPS/pemegang saham (induk) sesuai AD","Keterbukaan informasi bila ada entitas Tbk","Konsultasi pra-notifikasi KPPU (opsional) dan persetujuan regulator sektoral bila perlu"],
+  del:["Keputusan BOD & Dekom","Keputusan RUPS/sirkuler","Persetujuan regulator (bila ada)"],
+  who:["bod","dekom","induk","legal","risk","sektor","ojk"],gate:"Persetujuan final Dekom dan RUPS/induk atas transaksi dan penandatanganan CSPA.",
+  tip:"Siapkan paket persetujuan satu kali lengkap (kajian, DD, KJPP, risk opinion, legal opinion). Paket yang bolong biasanya menambah 2–4 minggu."},
+ {n:"Signing & pemenuhan CP",min:4,max:10,st:30,
+  goal:"Menandatangani perjanjian dan menyelesaikan semua syarat pendahuluan.",
+  act:["Penandatanganan CSPA","Pengumuman di surat kabar dan pemberitahuan ke karyawan (sesuai UU PT)","Waiver dari kreditur dan pihak ketiga (change of control)","Persetujuan RUPS target","Penyiapan dana dan escrow","Pre-closing covenant: target jalan normal"],
+  del:["CSPA ditandatangani","Bukti pemenuhan CP","Closing checklist"],
+  who:["bod","legal","lawfirm","seller","target","fin"],gate:"Konfirmasi seluruh CP terpenuhi atau di-waive.",
+  tip:"Mulai proses waiver kreditur target sejak DD. Ini CP yang paling sering molor karena tergantung bank pihak ketiga."},
+ {n:"Closing",min:1,max:2,st:38,
+  goal:"Peralihan saham dan pembayaran.",
+  act:["Pembayaran harga (langsung/escrow)","Penandatanganan akta pengambilalihan di notaris","RUPS target: perubahan direksi/komisaris","Pemberitahuan ke Kementerian Hukum (AHU)","Update daftar pemegang saham"],
+  del:["Akta pengambilalihan","Bukti bayar","Penerimaan pemberitahuan AHU"],
+  who:["fin","legal","notaris","ahu","seller","bod"],gate:"Closing: saham resmi beralih.",
+  tip:"Siapkan closing memo dan funds flow memo H-7 supaya hari closing hanya eksekusi, bukan negosiasi."},
+ {n:"Post-closing & integrasi (PMI)",min:12,max:26,st:40,post:true,
+  goal:"Menjalankan kewajiban pasca closing dan merealisasikan sinergi.",
+  act:["Notifikasi KPPU paling lambat 30 hari kerja setelah efektif (bila melewati ambang)","Penawaran tender wajib bila target Tbk","Completion accounts / penyesuaian harga","Rencana 100 hari: tata kelola, pelaporan, integrasi keuangan dan IT","Tracking sinergi dan klaim indemnity bila ada","Post-acquisition review oleh SPI"],
+  del:["Bukti notifikasi KPPU","100-day plan report","Dashboard sinergi"],
+  who:["deal","pmic","hrit","fin","legal","kppu","ojk","spi","target"],gate:null,
+  tip:"Tetapkan owner sinergi per baris sejak sebelum closing. Sinergi tanpa owner hampir pasti tidak tercapai."}
+];
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+
+/* Tabs */
+function showTab(id){
+  document.querySelectorAll('[role=tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===id));
+  document.querySelectorAll('main>section').forEach(s=>s.hidden=s.id!==id);
+  try{localStorage.setItem('acq-tab',id)}catch(e){}
+  window.scrollTo({top:$('nav.tabs').offsetTop,behavior:'smooth'});
+}
+document.querySelectorAll('[role=tab]').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+
+/* Track */
+let cur=0;
+function renderTrack(){
+  $('#track').innerHTML=P.map((p,i)=>{
+    const b=`<div class="step"><button aria-pressed="${i===cur}" data-i="${i}"><span class="n">Fase ${i+1}</span><span class="t">${esc(p.n)}</span><span class="d">${p.min}–${p.max} minggu</span></button></div>`;
+    const conn=i<P.length-1?(p.gate?'<span class="link"></span><span class="gate" title="Gate persetujuan"></span><span class="link"></span>':'<span class="link"></span>'):'';
+    return b+conn;
+  }).join('');
+  $('#track').querySelectorAll('button').forEach(b=>b.onclick=()=>selectPhase(+b.dataset.i));
+}
+function selectPhase(i){
+  cur=i;renderTrack();
+  const p=P[i];
+  $('#detail').innerHTML=`<h2>Fase ${i+1}. ${esc(p.n)}</h2>
+  <div class="meta"><span class="pill">${p.min}–${p.max} minggu</span>${p.gate?'<span class="pill amber">Ada gate persetujuan</span>':''}${p.post?'<span class="pill">Pasca closing</span>':''}</div>
+  <p style="margin:0 0 16px;max-width:70ch">${esc(p.goal)}</p>
+  <div class="cols">
+    <div><h3>Aktivitas utama</h3><ul>${p.act.map(a=>`<li>${esc(a)}</li>`).join('')}</ul></div>
+    <div><h3>Output</h3><ul>${p.del.map(a=>`<li>${esc(a)}</li>`).join('')}</ul>
+      <h3 style="margin-top:16px">Stakeholder terlibat</h3>
+      <div class="who">${p.who.map(w=>`<button data-sh="${w}">${esc(S[w].n)}</button>`).join('')}</div></div>
+  </div>
+  ${p.gate?`<div class="gatebox"><b>Gate:</b> ${esc(p.gate)}</div>`:''}
+  <div class="tip"><b>Catatan praktis:</b> ${esc(p.tip)}</div>
+  <div class="navrow"><button class="btn" id="prev" ${i===0?'disabled':''}>Fase sebelumnya</button><button class="btn" id="next" ${i===P.length-1?'disabled':''}>Fase berikutnya</button></div>`;
+  $('#prev').onclick=()=>selectPhase(i-1);$('#next').onclick=()=>selectPhase(i+1);
+  $('#detail').querySelectorAll('[data-sh]').forEach(b=>b.onclick=()=>openSh(b.dataset.sh));
+  const btn=$('#track').querySelector(`[data-i="${i}"]`);if(btn)btn.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+}
+
+/* Stakeholders */
+let filt='all';
+function renderFilters(){
+  const opts=[['all','Semua'],...Object.entries(CATS)];
+  $('#filters').innerHTML=opts.map(([k,v])=>`<button class="chip" aria-pressed="${filt===k}" data-f="${k}">${v}</button>`).join('');
+  $('#filters').querySelectorAll('button').forEach(b=>b.onclick=()=>{filt=b.dataset.f;renderFilters();renderSh()});
+}
+function renderSh(){
+  $('#shlist').innerHTML=Object.entries(S).filter(([k,s])=>filt==='all'||s.cat===filt).map(([k,s])=>{
+    const ph=P.map((p,i)=>p.who.includes(k)?i+1:null).filter(Boolean);
+    return `<details class="sh c-${s.cat}" id="sh-${k}"><summary><div><b>${esc(s.n)}</b><small>${esc(s.s)}</small></div><span class="cat">${CATS[s.cat]}</span></summary>
+    <div class="body"><h4>Peran</h4><p>${esc(s.peran)}</p><h4>Tugas</h4><ul>${s.tugas.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>
+    <h4>Tanggung jawab</h4><p>${esc(s.tj)}</p>${ph.length?`<h4>Aktif di fase</h4><p>${ph.join(', ')}</p>`:''}</div></details>`;
+  }).join('');
+}
+function openSh(k){
+  filt='all';renderFilters();renderSh();showTab('stake');
+  const el=$('#sh-'+k);el.open=true;setTimeout(()=>el.scrollIntoView({block:'center',behavior:'smooth'}),60);
+}
+
+/* RACI */
+const RC=[["BOD","bod"],["Dekom","dekom"],["Induk/RUPS","induk"],["Deal team","deal"],["Finance","fin"],["Legal/Corsec","legal"],["Risk","risk"],["FA","fa"],["Law firm","lawfirm"],["KAP/Pajak","kap"],["KJPP","kjpp"],["Penjual","seller"]];
+const RR=[
+ ["Investment thesis & kriteria target","A","I","C","R","C","I","C","R","","","",""],
+ ["Pengadaan konsultan","A","I","","R","C","C","","","","","",""],
+ ["NDA & NBO/LOI","A","I","I","R","C","R","C","R","C","","","C"],
+ ["Izin prinsip","R","A","A","R","C","C","C","C","","","",""],
+ ["Due diligence","I","I","","A","C","C","C","R","R","R","","C"],
+ ["Valuasi & fairness opinion","A","C","I","C","C","","","R","","C","R",""],
+ ["Negosiasi & drafting CSPA","A","I","I","R","C","C","C","R","R","C","","R"],
+ ["Persetujuan final transaksi","R","A","A","R","C","R","C","C","C","","C",""],
+ ["Pemenuhan CP & closing","A","I","I","R","R","R","","C","R","","","R"],
+ ["Notifikasi KPPU & AHU","A","I","I","C","","R","","","R","","",""],
+ ["Integrasi & tracking sinergi","A","C","I","R","R","C","C","","","","",""]
+];
+function renderRaci(){
+  $('#racitable').innerHTML=`<thead><tr><th>Aktivitas</th>${RC.map(c=>`<th>${c[0]}</th>`).join('')}</tr></thead><tbody>${
+    RR.map(r=>`<tr><td>${esc(r[0])}</td>${r.slice(1).map(v=>`<td>${v?`<span class="r ${v}">${v}</span>`:''}</td>`).join('')}</tr>`).join('')}</tbody>`;
+}
+
+/* Gantt */
+let scen='all';
+function renderScenario(){
+  const o=[['all','Tercepat vs terlama'],['min','Skenario cepat'],['max','Skenario lambat']];
+  $('#scenario').innerHTML=o.map(([k,v])=>`<button class="chip" aria-pressed="${scen===k}" data-s="${k}">${v}</button>`).join('');
+  $('#scenario').querySelectorAll('button').forEach(b=>b.onclick=()=>{scen=b.dataset.s;renderScenario();renderGantt()});
+}
+function renderGantt(){
+  // compute starts: fast uses base start, slow stretches start proportionally
+  const slowF=1.35;
+  const rows=P.map((p,i)=>{const sMin=p.st,sMax=Math.round(p.st*slowF);return{p,i,sMin,sMax}});
+  const span=Math.max(...rows.map(r=>r.sMax+r.p.max))+2;
+  const pct=w=>(w/span*100).toFixed(2)+'%';
+  const closeFast=P[8].st+P[8].min, closeSlow=Math.round(P[8].st*slowF)+P[8].max;
+  let ticks='';for(let m=0;m*4.33<=span;m+=2)ticks+=`<span style="left:${pct(m*4.33)}">Bln ${m}</span>`;
+  const mile=scen==='max'?[closeSlow]:scen==='min'?[closeFast]:[closeFast,closeSlow];
+  $('#gantt').innerHTML=`<div class="g-axis"><div></div><div class="g-ticks">${ticks}</div></div>`+
+   rows.map(r=>{
+     const c=r.p.post?' post':'';
+     let bars='';
+     if(scen!=='min')bars+=`<button class="g-bar max${c}" style="left:${pct(scen==='all'?r.sMin:r.sMax)};width:${pct(r.p.max)}" data-i="${r.i}" aria-label="${esc(r.p.n)} maksimal ${r.p.max} minggu"></button>`;
+     if(scen!=='max')bars+=`<button class="g-bar${c}" style="left:${pct(r.sMin)};width:${pct(r.p.min)}" data-i="${r.i}" aria-label="${esc(r.p.n)} minimal ${r.p.min} minggu"></button>`;
+     return `<div class="g-row"><div class="g-label">${r.i+1}. ${esc(r.p.n)}</div><div class="g-lane">${bars}${mile.map(m=>`<span class="g-mile" style="left:${pct(m)}" title="Closing"></span>`).join('')}</div></div>`;
+   }).join('');
+  $('#gantt').querySelectorAll('.g-bar').forEach(b=>b.onclick=()=>{showTab('alur');selectPhase(+b.dataset.i)});
+  const toM=w=>(w/4.33).toFixed(1).replace('.',',');
+  $('#timenote').innerHTML=`Garis oranye = closing. Skenario cepat: closing sekitar bulan ke-${toM(closeFast)}. Skenario lambat: sekitar bulan ke-${toM(closeSlow)}. Integrasi (ungu) berlanjut 3–6 bulan setelah closing. Faktor pemanjang paling umum: jadwal rapat Dekom/RUPS, waiver kreditur target, temuan DD yang memicu renegosiasi, dan penawaran tender bila target Tbk.`;
+}
+
+/* Budget (Rp juta) */
+const B=[
+ {k:"Financial advisor: retainer",lo:300,hi:900,who:"fa"},
+ {k:"Konsultan hukum: legal DD & dokumen transaksi",lo:750,hi:2500,who:"lawfirm"},
+ {k:"KAP: financial DD",lo:500,hi:1800,who:"kap"},
+ {k:"Konsultan pajak: tax DD & structuring",lo:250,hi:900,who:"taxc"},
+ {k:"KJPP: valuasi & fairness opinion",lo:150,hi:600,who:"kjpp"},
+ {k:"Commercial DD",lo:400,hi:1500,who:"cdd"},
+ {k:"Technical / IT DD",lo:250,hi:1000,who:"cdd"},
+ {k:"HR/aktuaria & ESG DD",lo:200,hi:700,who:"hresg"},
+ {k:"Notaris, AHU & administrasi",lo:50,hi:200,who:"notaris"},
+ {k:"Virtual data room, perjalanan & operasional tim",lo:100,hi:400,who:"deal"}
+];
+const fmt=v=>v>=1000?'Rp'+(v/1000).toLocaleString('id-ID',{maximumFractionDigits:2})+' M':'Rp'+Math.round(v).toLocaleString('id-ID')+' jt';
+function calc(){
+  const deal=Math.max(10,+$('#deal').value||500), cx=+$('#cx').value, fee=+$('#fee').value;
+  $('#feev').textContent=fee.toLocaleString('id-ID');
+  const sf=Math.min(2.5,Math.max(0.55,Math.sqrt(deal/500)));
+  const rows=B.map(b=>({k:b.k,lo:b.lo*sf*cx,hi:b.hi*sf*cx}));
+  if($('#tbk').checked)rows.push({k:"Tambahan target Tbk: tender offer, keterbukaan, konsultan pasar modal",lo:600*cx,hi:1800*cx});
+  if($('#pmi').checked)rows.push({k:"Konsultan PMI (100 hari)",lo:800*sf*cx,hi:3000*sf*cx});
+  const s=deal*1000*fee/100;
+  rows.push({k:`Financial advisor: success fee (${fee.toLocaleString('id-ID')}%)`,lo:s*0.85,hi:s*1.1});
+  const subLo=rows.reduce((a,r)=>a+r.lo,0),subHi=rows.reduce((a,r)=>a+r.hi,0);
+  rows.push({k:"Contingency 10%",lo:subLo*.1,hi:subHi*.1,c:1});
+  const tLo=subLo*1.1,tHi=subHi*1.1,dv=deal*1000;
+  const pc=v=>(v/dv*100).toLocaleString('id-ID',{maximumFractionDigits:1})+'%';
+  $('#totals').innerHTML=`<div><b>${fmt(tLo)} – ${fmt(tHi)}</b><span>Total biaya transaksi</span></div><div><b>${pc(tLo)} – ${pc(tHi)}</b><span>Terhadap nilai deal</span></div><div><b>${fmt(dv)}</b><span>Nilai transaksi</span></div>`;
+  $('#budtable').innerHTML=`<thead><tr><th>Pos biaya</th><th class="num">Bawah</th><th class="num">Atas</th></tr></thead><tbody>${
+    rows.map(r=>`<tr><td>${esc(r.k)}</td><td class="num">${fmt(r.lo)}</td><td class="num">${fmt(r.hi)}</td></tr>`).join('')
+  }<tr><td><b>Total</b></td><td class="num"><b>${fmt(tLo)}</b></td><td class="num"><b>${fmt(tHi)}</b></td></tr></tbody>`;
+}
+['deal','cx','fee','tbk','pmi'].forEach(id=>$('#'+id).addEventListener('input',calc));
+
+renderTrack();selectPhase(0);renderFilters();renderSh();renderRaci();renderScenario();renderGantt();calc();
+try{const t=localStorage.getItem('acq-tab');if(t&&document.getElementById(t)){document.querySelectorAll('[role=tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));document.querySelectorAll('main>section').forEach(s=>s.hidden=s.id!==t);}}catch(e){}
+</script>
+</body>
+</html>
